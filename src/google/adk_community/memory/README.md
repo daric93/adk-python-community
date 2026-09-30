@@ -29,6 +29,17 @@ client library. This provides functionality analogous to
 - `valkey-glide >= 2.4.0`
 - An embedding function (async callable)
 
+**Usage attribution (recommended):**
+
+`ValkeyMemoryService` never builds its own client — you pass one in — so it
+cannot identify itself to the server. Setting `client_info_tag="google-adk"` on
+your `GlideClientConfiguration` (or `GlideClusterClientConfiguration`) makes the
+connection report `lib-name=GlidePy(google-adk)` via `CLIENT SETINFO`, which lets
+operators attribute Valkey traffic to this integration. It is metadata only and
+changes no behaviour. The parameter exists from `valkey-glide` 2.5.2; leave
+`client_name` as is — it is a separate field. Attribution only counts clients
+that opt in, so untagged deployments will not show up.
+
 **Installation:**
 
 ```bash
@@ -47,6 +58,9 @@ from google.adk_community.memory import ValkeyMemoryService, ValkeyMemoryService
 config = GlideClientConfiguration(
     addresses=[NodeAddress(host="localhost", port=6379)],
     client_name="my_adk_memory_client",
+    # Recommended: tag the connection so Valkey usage is attributed to this
+    # integration (see "Usage attribution" below). Needs valkey-glide >= 2.5.2.
+    client_info_tag="google-adk",
 )
 client = await GlideClient.create(config)
 
